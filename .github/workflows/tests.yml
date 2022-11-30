@@ -1,0 +1,16 @@
+name: "Test Suite"
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  statics:
+    name: "Test Static Paths"
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: "Fetch Sources"
+      uses: actions/checkout@v3
+    - name: "Verify Static Paths"
+      run: make test-statics
