@@ -1,0 +1,272 @@
+// Style Sheet
+//
+// This is the main style-sheet for visual appearance of the main pages. It is
+// separated into logical groups with each group possibly matching for the same
+// elements.
+
+@charset "utf-8";
+
+@import url("https://fonts.googleapis.com/css2?family=Comfortaa");
+
+// Layout
+//
+// This section defines the layout of the main page. It defines how each
+// element is positioned and how they grow/shrink depending on viewport
+// changes. Visual effects that are not tied to the positioning are not part
+// of this section.
+
+$breakpoint: 640px;
+$corner-radius: 4px;
+$max-width: 64rem;
+
+body {
+        margin: auto;
+        max-width: $max-width;
+        padding: 0.5rem;
+}
+
+body > * {
+        border-radius: $corner-radius;
+        margin: 1rem 0;
+}
+
+footer {
+        padding: 1rem;
+}
+
+header {
+        margin: 1rem 1rem;
+}
+
+main {
+        padding: 2rem;
+}
+
+// Layout: header
+//
+// Layout configuration of the top-header. We render the logo-image with the
+// logo-text next to it. The entire block is a link to the landing page.
+
+header a {
+        display: block;
+}
+
+header img {
+        vertical-align: middle;
+}
+
+// Layout: nav
+//
+// The layout configuration of the main navigation. We render a horizontal
+// list of links with a menu-button on first position. On small devices, the
+// list is collapsed to only the active element and the menu is required
+// for navigation.
+//
+// We use the `table` display mode to guarantee the height of all elements is
+// identical. Only a single row is actually rendered.
+
+nav #nav-container {
+        display: table;
+        margin-right: $corner-radius;
+        table-layout: fixed;
+}
+
+nav #nav-container > * {
+        display: table-cell;
+        padding: 1rem;
+        vertical-align: middle;
+        width: min-content;
+}
+
+@media (max-width: $breakpoint) {
+        nav #nav-container a:not(.nav-active) {
+                display: none;
+        }
+}
+
+// Layout: nav-button
+//
+// This renders a 3-stripes button with animations. It renders 3 span elements
+// as horizontal lines above each other, with an animation linked to a hidden
+// checkbox. The animation hides the middle line and makes the other two lines
+// cross.
+//
+// The checkbox is used as workaround to allow an animation to happen, since it
+// provides the `:checked` selector. The checkbox itself is hidden, only its
+// associated label-element is visible (clicking the label-element triggers the
+// linked checkbox).
+//
+// The menulines (3-striped-button) have a configurable radius and separation.
+// Their thickness is twice the radius. The length of the menulines is then
+// calculated to exactly result in an isosceles right angled triangle in case
+// their animation is performed. This allows for perfectly symmetric animations
+// without stretching the menulines.
+
+$menuline-radius: 2px;
+$menuline-separation: 7px;
+
+// We have the hypotenuse (distance from center of upper line to
+// center of lower line). If the upper (or lower) line is now rotated
+// by 45° we get a isosceles right-angled triangle, so a simple
+// division by sqrt(2)/2 gets us the length of the cathetus. We then have
+// to add back the radius twice since we calculate rotation based on the
+// center of the rounded-corners.
+$menuline-length: calc(
+        (4 * #{$menuline-radius} + 2 * #{$menuline-separation})
+        / 1.414 * 2 + 2 * #{$menuline-radius}
+);
+
+nav #nav-checkbox {
+        display: none;
+}
+
+nav #nav-button {
+        cursor: pointer;
+        display: block;
+}
+
+nav #nav-button span {
+        display: block;
+
+        border-radius: $menuline-radius;
+        height: calc(2 * #{$menuline-radius});
+        width: $menuline-length;
+
+        transform-origin: $menuline-radius $menuline-radius;
+        transition: transform 0.4s ease-in-out;
+}
+
+nav #nav-button span.middle {
+        margin: $menuline-separation 0;
+        transition: transform 0.2s ease-in-out 0;
+}
+
+nav #nav-checkbox:checked ~ #nav-container #nav-button span.top {
+        transform: rotate(45deg);
+}
+
+nav #nav-checkbox:checked ~ #nav-container #nav-button span.middle {
+        transform: scaleX(0);
+}
+
+nav #nav-checkbox:checked ~ #nav-container #nav-button span.bottom {
+        transform: rotate(-45deg);
+}
+
+// Layout: nav-menu
+//
+// The main layout of the hidden slide-in navigation menu. The menu is attached
+// below the main navigation line and slides down. A non-interruptive animation
+// is used to avoid any interaction with the main-layout.
+//
+// A pseudo container element is used around the main `ul`, since `absolute`
+// positioning inherits values from its first non-inline positioned parent. We
+// use a dummy `relative` positioned div for this.
+
+nav #nav-menu {
+        height: 0;
+        position: relative;
+        top: -$corner-radius;
+}
+
+nav #nav-menu a {
+        display: block;
+        padding: 0.5rem 2rem 0.5rem calc(#{$menuline-length} + 3rem);
+}
+
+nav #nav-menu ul {
+        border-radius: 0 0 $corner-radius $corner-radius;
+        margin: 0;
+        padding: 0 0 $corner-radius 0;
+        width: 100%;
+        position: absolute;
+
+        transform: scaleY(0);
+        transform-origin: 0 0;
+        transition: transform 0.2s ease-in;
+}
+
+nav #nav-checkbox:checked ~ #nav-menu ul {
+        transform: none;
+        transition: transform 0.2s ease-out;
+}
+
+// Visual
+//
+// This section configures the visual appearance of the individual elements. No
+// major layout configuration is done, but it can still have minor effects on
+// the layout due to font-sizing and similar.
+
+$color-background-dark: black;
+$color-background-content: white;
+$color-background-light: #f5f5ef;
+$color-text-dark: black;
+$color-text-content: black;
+$color-text-light: white;
+$color-highlight-dark: #b53545;
+$color-highlight-light: #c54555;
+
+$font-logo: "Comfortaa";
+
+body {
+        background-color: $color-background-light;
+        font-family: sans-serif;
+}
+
+footer {
+        background-color: $color-background-content;
+}
+
+header a {
+        color: $color-text-dark;
+        font-family: $font-logo;
+        font-size: 50px; // logo-size is 75px
+        text-decoration: none;
+}
+
+main {
+        background-color: $color-background-content;
+        color: $color-text-content;
+}
+
+nav {
+        background-color: $color-background-dark;
+        font-family: $font-logo;
+        font-size: 120%;
+}
+
+// Visual: nav
+//
+// This configures the visual appearance of the navigation menu, including the
+// 3-striped button and the sliding menu.
+
+#nav a {
+        color: $color-text-light;
+        text-decoration: none;
+}
+
+#nav a:hover {
+        background-color: $color-highlight-dark;
+}
+
+#nav a.nav-active {
+        background-color: $color-highlight-light;
+}
+
+#nav-button span {
+        background-color: $color-text-light;
+}
+
+#nav-menu ul {
+        background-color: $color-background-dark;
+        color: $color-text-light;
+        list-style: none;
+}
+
+#nav-menu ul li:hover {
+        background-color: $color-highlight-dark;
+}
+
+#nav-menu ul li.nav-active {
+        background-color: $color-highlight-light;
+}
