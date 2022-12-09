@@ -5,6 +5,16 @@ on:
   pull_request:
 
 jobs:
+  ssg:
+    name: "Test SSG Builds"
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: "Fetch Sources"
+      uses: actions/checkout@v3
+    - name: "Build SSG Pages"
+      run: make ssg-build-docker
+
   statics:
     name: "Test Static Paths"
     runs-on: ubuntu-latest

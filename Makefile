@@ -47,9 +47,13 @@ SHELL			:= /bin/bash -eo pipefail
 BUILDDIR		?= ./data
 SRCDIR			?= .
 
+BIN_DOCKER		?= docker
 BIN_FILE		?= file
+BIN_ID			?= id
 BIN_MKDIR		?= mkdir
+BIN_RM			?= rm
 BIN_TEST		?= test
+BIN_ZOLA		?= zola
 
 #
 # Generic Targets
@@ -119,3 +123,43 @@ test-statics:
 	$(BIN_TEST) "$$($(BIN_FILE_MIME) $(BUILDDIR)/images/logo_dark_32.png)" = "image/png; charset=binary"
 	$(BIN_TEST) "$$($(BIN_FILE_MIME) $(BUILDDIR)/images/logo_dark_400.png)" = "image/png; charset=binary"
 	$(BIN_TEST) "$$($(BIN_FILE_MIME) $(BUILDDIR)/images/logo_light.png)" = "image/png; charset=binary"
+
+#
+# SSG Builds
+#
+# The static-site-generator used for `src/ssg/` is `zola`. We generate the
+# full build in `data/ssg/` either via a local invocation or with a container
+# to avoid local installs.
+#
+
+SSG_CONTAINER_ZOLA	?= ghcr.io/getzola/zola:v0.16.1
+
+.PHONY: ssg-build
+ssg-build:
+	$(BIN_RM) -rf "$(BUILDDIR)/ssg"
+	$(BIN_ZOLA) \
+		--root "$(SRCDIR)/src/ssg" \
+		build \
+			--output-dir "$(BUILDDIR)/ssg"
+
+.PHONY: ssg-build-docker
+ssg-build-docker:
+	$(BIN_RM) -rf "$(BUILDDIR)/ssg"
+	$(BIN_DOCKER) \
+		run \
+			--interactive \
+			--rm \
+			--tty \
+			--user "$$($(BIN_ID) -u):$$($(BIN_ID) -g)" \
+			--volume "$(abspath $(BUILDDIR)):/srv/build" \
+			--volume "$(abspath $(SRCDIR)):/srv/src" \
+			"$(SSG_CONTAINER_ZOLA)" \
+				--root "/srv/src/src/ssg" \
+				build \
+					--output-dir "/srv/build/ssg"
+
+.PHONY: ssg-serve
+ssg-serve:
+	$(BIN_ZOLA) \
+		--root "$(SRCDIR)/src/ssg" \
+		serve
