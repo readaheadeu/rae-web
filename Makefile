@@ -49,6 +49,7 @@ SRCDIR			?= .
 
 BIN_FILE		?= file
 BIN_MKDIR		?= mkdir
+BIN_TEST		?= test
 
 #
 # Generic Targets
@@ -113,8 +114,8 @@ BIN_FILE_MIME = $(BIN_FILE) --brief --mime --
 
 .PHONY: test-statics
 test-statics:
-	test "$$($(BIN_FILE_MIME) $(BUILDDIR)/images/logo_dark.png)" = "image/png; charset=binary"
-	test "$$($(BIN_FILE_MIME) $(BUILDDIR)/images/logo_dark_32.ico)" = "image/vnd.microsoft.icon; charset=binary"
-	test "$$($(BIN_FILE_MIME) $(BUILDDIR)/images/logo_dark_32.png)" = "image/png; charset=binary"
-	test "$$($(BIN_FILE_MIME) $(BUILDDIR)/images/logo_dark_400.png)" = "image/png; charset=binary"
-	test "$$($(BIN_FILE_MIME) $(BUILDDIR)/images/logo_light.png)" = "image/png; charset=binary"
+	$(BIN_TEST) "$$($(BIN_FILE_MIME) $(BUILDDIR)/images/logo_dark.png)" = "image/png; charset=binary"
+	$(BIN_TEST) "$$($(BIN_FILE_MIME) $(BUILDDIR)/images/logo_dark_32.ico)" = "image/vnd.microsoft.icon; charset=binary"
+	$(BIN_TEST) "$$($(BIN_FILE_MIME) $(BUILDDIR)/images/logo_dark_32.png)" = "image/png; charset=binary"
+	$(BIN_TEST) "$$($(BIN_FILE_MIME) $(BUILDDIR)/images/logo_dark_400.png)" = "image/png; charset=binary"
+	$(BIN_TEST) "$$($(BIN_FILE_MIME) $(BUILDDIR)/images/logo_light.png)" = "image/png; charset=binary"
