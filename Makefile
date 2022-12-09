@@ -149,7 +149,6 @@ ssg-build-docker:
 		run \
 			--interactive \
 			--rm \
-			--tty \
 			--user "$$($(BIN_ID) -u):$$($(BIN_ID) -g)" \
 			--volume "$(abspath $(BUILDDIR)):/srv/build" \
 			--volume "$(abspath $(SRCDIR)):/srv/src" \
