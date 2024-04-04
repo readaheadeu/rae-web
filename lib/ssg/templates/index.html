@@ -1,0 +1,17 @@
+{%- extends "root.html" -%}
+
+{%- block main -%}
+<section id="title">
+  <h1>
+    {{ config.title }}
+  </h1>
+  <div>
+    {{ config.description }}
+  </div>
+</section>
+
+<section>
+
+{{ section.content | safe }}
+</section>
+{%- endblock main -%}

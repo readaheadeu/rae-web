@@ -3,11 +3,11 @@
 #
 
 base_url = "/"
-description = "Teaching Chickens how to Read"
+description = "Open Source Development"
 title = "Readahead"
 
 compile_sass = true
-minify_html = true
+minify_html = false
 
 [extra]
 logo_title = "readahead"

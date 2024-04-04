@@ -6,8 +6,6 @@
 
 @charset "utf-8";
 
-@import url("https://fonts.googleapis.com/css2?family=Comfortaa");
-
 // Layout
 //
 // This section defines the layout of the main page. It defines how each
@@ -15,9 +13,9 @@
 // changes. Visual effects that are not tied to the positioning are not part
 // of this section.
 
-$breakpoint: 640px;
 $corner-radius: 4px;
 $max-width: 64rem;
+$min-width: 32rem;
 
 body {
         margin: auto;
@@ -30,16 +28,16 @@ body > * {
         margin: 1rem 0;
 }
 
-footer {
-        padding: 1rem;
-}
-
 header {
         margin: 1rem 1rem;
 }
 
 main {
-        padding: 2rem;
+        padding: 1rem;
+}
+
+footer {
+        padding: 1rem;
 }
 
 // Layout: header
@@ -49,10 +47,7 @@ main {
 
 header a {
         display: block;
-}
-
-header img {
-        vertical-align: middle;
+        font-size: 50px; // logo-size is 75px
 }
 
 // Layout: nav
@@ -78,7 +73,7 @@ nav #nav-container > * {
         width: min-content;
 }
 
-@media (max-width: $breakpoint) {
+@media (max-width: $min-width) {
         nav #nav-container a:not(.nav-active) {
                 display: none;
         }
@@ -164,7 +159,6 @@ nav #nav-checkbox:checked ~ #nav-container #nav-button span.bottom {
 // use a dummy `relative` positioned div for this.
 
 nav #nav-menu {
-        height: 0;
         position: relative;
         top: -$corner-radius;
 }
@@ -191,37 +185,64 @@ nav #nav-checkbox:checked ~ #nav-menu ul {
         transition: transform 0.2s ease-out;
 }
 
+// Layout: main
+//
+// Layout configuration of the main content.
+
+main section {
+        padding-bottom: 1rem;
+}
+
+// Layout: footer
+//
+// Layout configuration of the trailing footer.
+
+footer {
+        text-align: center;
+}
+
 // Visual
 //
 // This section configures the visual appearance of the individual elements. No
 // major layout configuration is done, but it can still have minor effects on
 // the layout due to font-sizing and similar.
 
-$color-background-dark: black;
+$color-background-dark: #444444;
 $color-background-content: white;
-$color-background-light: #f5f5ef;
+$color-background-light: white;
 $color-text-dark: black;
 $color-text-content: black;
 $color-text-light: white;
-$color-highlight-dark: #b53545;
-$color-highlight-light: #c54555;
+$color-highlight-dark: #7A206F;
+$color-highlight-light: #8A307F;
 
 $font-logo: "Comfortaa";
+$font-content: "Jetbrains Mono";
+
+@font-face {
+        font-display: swap;
+        font-family: "Comfortaa";
+        font-style: normal;
+        font-weight: 400;
+        src: url("fonts/Comfortaa-Regular.ttf"), local("ttf");
+}
+
+@font-face {
+        font-display: swap;
+        font-family: "Jetbrains Mono";
+        font-style: normal;
+        font-weight: 400;
+        src: url("fonts/JetBrainsMono-Regular.ttf"), local("ttf");
+}
 
 body {
         background-color: $color-background-light;
-        font-family: sans-serif;
-}
-
-footer {
-        background-color: $color-background-content;
-}
-
-header a {
         color: $color-text-dark;
-        font-family: $font-logo;
-        font-size: 50px; // logo-size is 75px
-        text-decoration: none;
+}
+
+nav {
+        background-color: $color-background-dark;
+        color: $color-text-light;
 }
 
 main {
@@ -229,16 +250,104 @@ main {
         color: $color-text-content;
 }
 
-nav {
+footer {
         background-color: $color-background-dark;
-        font-family: $font-logo;
-        font-size: 120%;
+        color: $color-text-light;
+}
+
+// Visual: links
+//
+// Ensure links discard all of the default styling and instead use a thick
+// highlighted underline, expanding to full background-highlight on hover.
+
+main a {
+        color: $color-text-content;
+}
+
+header a,
+nav a,
+footer a,
+{
+        color: $color-text-light;
+}
+
+a {
+        text-decoration: underline $color-highlight-light 3px;
+}
+
+a:hover {
+        background-color: $color-highlight-light;
+        color: $color-text-light;
+}
+
+// Visual: h1 to h6
+//
+// Prepend as many '#' to each header as given by its level, color it using
+// the highlight-color.
+
+main h1::before,
+main h2::before,
+main h3::before,
+main h4::before,
+main h5::before,
+main h6::before {
+        color: $color-highlight-light;
+}
+
+main h1::before {
+        content: "# ";
+}
+
+main h2::before {
+        content: "## ";
+}
+
+main h3::before {
+        content: "### ";
+}
+
+main h4::before {
+        content: "#### ";
+}
+
+main h5::before {
+        content: "##### ";
+}
+
+main h6::before {
+        content: "###### ";
+}
+
+// Visual: header
+//
+// This section contains styling properties of the upper logo in the header
+// and its surrounding elements.
+
+header a {
+        font-family: $font-logo, sans-serif;
+}
+
+header a,
+header a:hover,
+{
+        background-color: transparent;
+        color: $color-text-dark;
+        text-decoration: none;
+}
+
+header img {
+        vertical-align: middle;
 }
 
 // Visual: nav
 //
 // This configures the visual appearance of the navigation menu, including the
 // 3-striped button and the sliding menu.
+
+#nav {
+        font-family: $font-logo, sans-serif;
+        font-size: 120%;
+}
 
 #nav a {
         color: $color-text-light;
@@ -269,4 +378,36 @@ nav {
 
 #nav-menu ul li.nav-active {
         background-color: $color-highlight-light;
+}
+
+// Visual: main
+//
+// Style configuration for the main part of the page with rendered content
+// from the markup files.
+
+main {
+        font-family: $font-content, sans-serif;
+        font-size: 120%;
+}
+
+main #title {
+        font-size: 2rem;
+        padding-bottom: 2rem;
+        padding-left: 0.5rem;
+}
+
+main #title h1 {
+        font-size: 4rem;
+        font-weight: 1000;
+        margin: 1rem 0;
+}
+
+// Visual: footer
+//
+// Style configuration for the trailing footer with metadata about the
+// main content.
+
+footer {
+        font-family: $font-content, sans-serif;
+        font-size: 110%;
 }

@@ -1,0 +1,88 @@
+{%- set root = get_section(path="_index.md") -%}
+{%- set w = get_section(path="w/_index.md") -%}
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property='og:type' content='article' />
+
+    <title>{{ config.title }} – {{ config.description }}</title>
+
+    <meta name="title" content="{{ config.title }}" />
+    <meta name="DCTERMS.title" content="{{ config.title }}" />
+    <meta property="og:title" content="{{ config.title }}" />
+
+    <meta name="description" content="{{ config.description }}">
+    <meta name="DCTERMS.description" content="{{ config.description }}">
+    <meta property="og:description" content="{{ config.description }}" />
+
+    <link rel="icon" type="image/png" href="{{ get_url(path="s/images/favicon.png") }}" />
+    <link rel="stylesheet" type="text/css" href="{{ get_url(path="s/style.css") }}" />
+    <script type="text/javascript" src="{{ get_url(path="s/style.js") }}" defer></script>
+  </head>
+  <body>
+    <header>
+      <div>
+        <a href="{{ config.base_url | safe }}">
+          <img
+            alt="Page Logo"
+            src="{{ get_url(path="s/images/logo-dark.75.png") }}"
+            width="75"
+            height="75"
+          />
+{%- if not current_path or current_path != root.path %}
+          {{ config.extra.logo_title }}
+{%- endif %}
+        </a>
+      </div>
+    </header>
+    <nav id="nav">
+      <input id="nav-checkbox" type="checkbox" />
+      <div id="nav-container">
+        <label id="nav-button" for="nav-checkbox">
+          <span class="top"></span>
+          <span class="middle"></span>
+          <span class="bottom"></span>
+        </label>
+{%- if current_path and current_path == root.path %}
+        <a href="{{ root.permalink | safe }}" class="nav-active">{{ root.title }}</a>
+{%- else %}
+        <a href="{{ root.permalink | safe }}">{{ root.title }}</a>
+{%- endif %}
+
+{%- for page in w.pages %}
+{%- if current_path and current_path == page.path %}
+        <a href="{{ page.permalink | safe }}" class="nav-active">{{ page.title }}</a>
+{%- else %}
+        <a href="{{ page.permalink | safe }}">{{ page.title }}</a>
+{%- endif %}
+        <a href="https://github.com/readaheadeu">@GitHub</a>
+{%- endfor %}
+      </div>
+      <div id="nav-menu">
+        <ul>
+          <li><a href="{{ root.permalink | safe }}">{{ root.title }}</a></li>
+{%- for page in w.pages %}
+          <li><a href="{{ page.permalink | safe }}">{{ page.title }}</a></li>
+{%- endfor %}
+          <li><a href="https://github.com/readaheadeu">@GitHub</a></li>
+        </ul>
+      </div>
+    </nav>
+    <main>
+
+{% block main %}
+{% endblock main %}
+
+    </main>
+    <footer>
+      <section id="maintenance">
+        Maintained by <a href="{{ get_url(path="/") }}">Readahead</a>
+      </section>
+    </footer>
+  </body>
+</html>

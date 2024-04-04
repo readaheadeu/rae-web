@@ -138,7 +138,7 @@ SSG_CONTAINER_ZOLA	?= ghcr.io/getzola/zola:v0.16.1
 ssg-build:
 	$(BIN_RM) -rf "$(BUILDDIR)/ssg"
 	$(BIN_ZOLA) \
-		--root "$(SRCDIR)/src/ssg" \
+		--root "$(SRCDIR)/lib/ssg" \
 		build \
 			--output-dir "$(BUILDDIR)/ssg"
 
@@ -153,12 +153,12 @@ ssg-build-docker:
 			--volume "$(abspath $(BUILDDIR)):/srv/build" \
 			--volume "$(abspath $(SRCDIR)):/srv/src" \
 			"$(SSG_CONTAINER_ZOLA)" \
-				--root "/srv/src/src/ssg" \
+				--root "/srv/src/lib/ssg" \
 				build \
 					--output-dir "/srv/build/ssg"
 
 .PHONY: ssg-serve
 ssg-serve:
 	$(BIN_ZOLA) \
-		--root "$(SRCDIR)/src/ssg" \
+		--root "$(SRCDIR)/lib/ssg" \
 		serve
