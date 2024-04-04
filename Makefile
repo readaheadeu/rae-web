@@ -2,82 +2,40 @@
 # Maintenance Makefile
 #
 
-#
-# Global Setup
-#
-# This section sets some global parameters that get rid of some old `make`
-# annoyences.
-#
-#     SHELL
-#         We standardize on `bash` for better inline scripting capabilities,
-#         and we always enable `pipefail`, to make sure individual failures
-#         in a pipeline will be treated as failure.
-#
-#     .SECONDARY:
-#         An empty SECONDARY target signals gnu-make to keep every intermediate
-#         files around, even on failure. We want intermediates to stay around
-#         so we get better caching behavior.
-#
-
+# Enforce bash with fatal errors.
 SHELL			:= /bin/bash -eo pipefail
 
+# Keep intermediates around on failures for better caching.
 .SECONDARY:
 
-#
-# Parameters
-#
-# The set of global parameters that can be controlled by the caller and the
-# calling environment.
-#
-#     BUILDDIR
-#         Path to the directory used to store build artifacts. This defaults
-#         to `./data`, so all artifacts are stored in a subdirectory that can
-#         be easily cleaned.
-#
-#     SRCDIR
-#         Path to the source code directory. This defaults to `.`, so it
-#         expects `make` to be called from within the source directory.
-#
-#     BIN_*
-#         For all binaries that are executed as part of this makefile, a
-#         variable called `BIN_<exe>` defines the path or name of the
-#         executable. By default, they are set to the name of the binary.
-#
-
-BUILDDIR		?= ./data
+# Default build and source directories.
+BUILDDIR		?= ./build
 SRCDIR			?= .
 
-BIN_DOCKER		?= docker
-BIN_FILE		?= file
-BIN_ID			?= id
-BIN_MKDIR		?= mkdir
-BIN_RM			?= rm
-BIN_TEST		?= test
-BIN_ZOLA		?= zola
+#
+# Build Images
+#
+
+# https://github.com/readaheadeu/rae-images/pkgs/container/rae-zola
+IMG_ZOLA		?= ghcr.io/readaheadeu/rae-zola:latest
 
 #
-# Generic Targets
+# Common Commands
 #
-# The following is a set of generic targets used across the makefile. The
-# following targets are defined:
+
+DOCKER_RUN		= docker run --interactive --rm
+
+DOCKER_RUN_SELF		= $(DOCKER_RUN) --user "$$(id -u):$$(id -g)"
+
 #
-#     help
-#         This target prints all supported targets. It is meant as
-#         documentation of targets we support and might use outside of this
-#         repository.
-#         This is also the default target.
+# Common Functions
 #
-#     $(BUILDDIR)/
-#     $(BUILDDIR)/%/
-#         This target simply creates the specified directory. It is limited to
-#         the build-dir as a safety measure. Note that this requires you to use
-#         a trailing slash after the directory to not mix it up with regular
-#         files. Lastly, you mostly want this as order-only dependency, since
-#         timestamps on directories do not affect their content.
+
+# Replace spaces with other characters in a list.
+F_REPLACE_SPACE		= $(subst $(eval ) ,$2,$1)
+
 #
-#     FORCE
-#         Dummy target to use as dependency to force `.PHONY` behavior on
-#         targets that cannot use `.PHONY`.
+# Target: help
 #
 
 .PHONY: help
@@ -91,74 +49,79 @@ help:
 	@echo
 	@echo "    help:               Print this usage information."
 	@echo
-	@echo "    test-statics:       Verify all static artifacts are valid"
+	@echo "    web-build:          Build the Zola-based website"
+	@echo "    web-serve:          Serve the Zola-based website"
+	@echo "    web-test:           Run the website test suite"
+
+#
+# Target: BUILDDIR
+#
 
 $(BUILDDIR)/:
-	$(BIN_MKDIR) -p "$@"
+	mkdir -p "$@"
 
 $(BUILDDIR)/%/:
-	$(BIN_MKDIR) -p "$@"
+	mkdir -p "$@"
+
+#
+# Target: FORCE
+#
+# Used as alternative to `.PHONY` if the target is not fixed.
+#
 
 .PHONY: FORCE
 FORCE:
 
 #
-# Test Statics
-#
-# This contains availability and content tests for static paths in the
-# builddir. This is used to ensure any paths we expose to the outside remain
-# available in this repository and we do not suddenly break links (or if we
-# break them, we have to explicitly do so by changing these tests).
-#
-# Basic content-verification is placed here, but elaborate tests belong into
-# the generator-based tests for each data type.
+# Target: web-*
 #
 
-BIN_FILE_MIME = $(BIN_FILE) --brief --mime --
+WEB_TOPLEVEL = \
+	s \
+	w \
+	404.html \
+	index.html \
+	robots.txt \
+	sitemap.xml
 
-.PHONY: test-statics
-test-statics:
-	$(BIN_TEST) "$$($(BIN_FILE_MIME) $(BUILDDIR)/images/logo_dark.png)" = "image/png; charset=binary"
-	$(BIN_TEST) "$$($(BIN_FILE_MIME) $(BUILDDIR)/images/logo_dark_32.ico)" = "image/vnd.microsoft.icon; charset=binary"
-	$(BIN_TEST) "$$($(BIN_FILE_MIME) $(BUILDDIR)/images/logo_dark_32.png)" = "image/png; charset=binary"
-	$(BIN_TEST) "$$($(BIN_FILE_MIME) $(BUILDDIR)/images/logo_dark_400.png)" = "image/png; charset=binary"
-	$(BIN_TEST) "$$($(BIN_FILE_MIME) $(BUILDDIR)/images/logo_light.png)" = "image/png; charset=binary"
+.PHONY: web-build
+web-build: $(BUILDDIR)/web/
+	$(DOCKER_RUN_SELF) \
+		--volume "$(abspath $(BUILDDIR)):/srv/build" \
+		--volume "$(abspath $(SRCDIR)):/srv/src" \
+		"$(IMG_ZOLA)" \
+			--root "/srv/src/lib/web" \
+			build \
+			--force \
+			--output-dir "/srv/build/web"
 
-#
-# SSG Builds
-#
-# The static-site-generator used for `src/ssg/` is `zola`. We generate the
-# full build in `data/ssg/` either via a local invocation or with a container
-# to avoid local installs.
-#
+.PHONY: web-serve
+web-serve: $(BUILDDIR)/web/
+	$(DOCKER_RUN_SELF) \
+		--publish "1111:1111" \
+		--volume "$(abspath $(BUILDDIR)):/srv/build" \
+		--volume "$(abspath $(SRCDIR)):/srv/src" \
+		"$(IMG_ZOLA)" \
+			--root "/srv/src/lib/web" \
+			serve \
+			--force \
+			--interface "0.0.0.0" \
+			--output-dir "/srv/build/web"
 
-SSG_CONTAINER_ZOLA	?= ghcr.io/getzola/zola:v0.16.1
-
-.PHONY: ssg-build
-ssg-build:
-	$(BIN_RM) -rf "$(BUILDDIR)/ssg"
-	$(BIN_ZOLA) \
-		--root "$(SRCDIR)/lib/ssg" \
-		build \
-			--output-dir "$(BUILDDIR)/ssg"
-
-.PHONY: ssg-build-docker
-ssg-build-docker:
-	$(BIN_RM) -rf "$(BUILDDIR)/ssg"
-	$(BIN_DOCKER) \
-		run \
-			--interactive \
-			--rm \
-			--user "$$($(BIN_ID) -u):$$($(BIN_ID) -g)" \
-			--volume "$(abspath $(BUILDDIR)):/srv/build" \
-			--volume "$(abspath $(SRCDIR)):/srv/src" \
-			"$(SSG_CONTAINER_ZOLA)" \
-				--root "/srv/src/lib/ssg" \
-				build \
-					--output-dir "/srv/build/ssg"
-
-.PHONY: ssg-serve
-ssg-serve:
-	$(BIN_ZOLA) \
-		--root "$(SRCDIR)/lib/ssg" \
-		serve
+.PHONY: web-test
+web-test:
+	@# Test existance of the directory.
+	test -d "$(BUILDDIR)/web"
+	@# Verify that we know exactly what is placed on the root level.
+	test "$$(ls "$(BUILDDIR)/web" | sort)" = \
+		"$$( \
+			printf \
+			"$(call F_REPLACE_SPACE,$(sort $(WEB_TOPLEVEL)),\n)\n" \
+		)"
+	@# Verify known permalinks.
+	test "$$(cat $(BUILDDIR)/web/index.html | file --brief --mime -)" = "text/html; charset=utf-8"
+	test "$$(cat $(BUILDDIR)/web/404.html | file --brief --mime -)" = "text/html; charset=utf-8"
+	test "$$(cat $(BUILDDIR)/web/robots.txt | file --brief --mime -)" = "text/plain; charset=us-ascii"
+	test "$$(cat $(BUILDDIR)/web/sitemap.xml | file --brief --mime -)" = "text/xml; charset=us-ascii"
+	@# Verify reserved redirects do not exist.
+	test ! -e "$(BUILDDIR)/web/p"

@@ -5,8 +5,8 @@ static content alongside it.
 
 ### Project
 
- * **Website**: <https://github.com/readaheadeu/rae-web>
- * **Bug Tracker**: <https://github.com/readaheadeu/rae-web/issues>
+ * **Website**: <https://readahead.eu/p/rae-web>
+ * **Bug Tracker**: <https://readahead.eu/p/rae-web/issues>
 
 ### Repository:
 
