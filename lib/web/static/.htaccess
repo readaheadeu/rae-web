@@ -1,2 +1,4 @@
 RewriteEngine On
-RewriteRule p/(.*) https://github.com/readaheadeu/$1 [END,NE,R]
+
+# Redirect: p/ABC/XYZ -> github.com/readaheadeu/ABC/XYZ
+RewriteRule "^p/(.*)$" "https://github.com/readaheadeu/$1" [L,NE,R]
