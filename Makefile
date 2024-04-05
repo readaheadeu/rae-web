@@ -125,4 +125,5 @@ web-test:
 	test "$$(cat $(BUILDDIR)/web/sitemap.xml | file --brief --mime -)" = "text/xml; charset=us-ascii"
 	test -d "$(BUILDDIR)/web/s/webfinger"
 	@# Verify reserved redirects do not exist.
+	test ! -e "$(BUILDDIR)/web/.well-known/webfinger"
 	test ! -e "$(BUILDDIR)/web/p"
