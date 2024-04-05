@@ -1,0 +1,49 @@
+name: "CI for Web Builds"
+
+on:
+  pull_request:
+    paths:
+    - ".github/workflows/web.yml"
+    - "Makefile"
+    - "lib/web/**"
+  push:
+    branches-ignore: ["pr/**"]
+    tags: ["**"]
+    paths:
+    - ".github/workflows/web.yml"
+    - "Makefile"
+    - "lib/web/**"
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: "Deploy to Production"
+        required: false
+        default: "no"
+
+defaults:
+  run:
+    shell: "bash"
+
+jobs:
+  build:
+    name: "Web Build/Test/Deploy"
+    runs-on: ubuntu-latest
+    steps:
+    - name: "Clone Repository"
+      uses: actions/checkout@v4
+
+    - name: "Build Website"
+      run: make web-build
+
+    - name: "Test Website"
+      run: make web-test
+
+    - name: "Deploy Website"
+      if: inputs.deploy == 'yes'
+
+      env:
+        DEPLOY_WEB_HOSTNAME: ${{ env.RAE_WEB_HOSTNAME }}
+        DEPLOY_WEB_PASSWORD: ${{ secrets.RAE_WEB_PASSWORD }}
+        DEPLOY_WEB_USERNAME: ${{ secrets.RAE_WEB_USERNAME }}
+
+      run: make deploy-web
