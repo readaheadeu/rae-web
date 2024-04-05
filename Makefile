@@ -16,6 +16,8 @@ SRCDIR			?= .
 # Build Images
 #
 
+# https://github.com/readaheadeu/rae-images/pkgs/container/rae-lftp
+IMG_LFTP		?= ghcr.io/readaheadeu/rae-lftp:latest
 # https://github.com/readaheadeu/rae-images/pkgs/container/rae-zola
 IMG_ZOLA		?= ghcr.io/readaheadeu/rae-zola:latest
 
@@ -49,6 +51,8 @@ help:
 	@echo
 	@echo "    help:               Print this usage information."
 	@echo
+	@echo "    deploy-web:         Deploy the website"
+	@echo
 	@echo "    web-build:          Build the Zola-based website"
 	@echo "    web-serve:          Serve the Zola-based website"
 	@echo "    web-test:           Run the website test suite"
@@ -71,6 +75,51 @@ $(BUILDDIR)/%/:
 
 .PHONY: FORCE
 FORCE:
+
+#
+# Target: deploy-*
+#
+
+DEPLOY_WEB_HOSTNAME ?=
+DEPLOY_WEB_PASSWORD ?=
+DEPLOY_WEB_USERNAME ?=
+
+# Paths to preserve when syncing the top-level web sources.
+DEPLOY_WEB_PRESERVE	= \
+	lib
+
+F_DEPLOY_LFTP		= \
+	$(DOCKER_RUN_SELF) \
+		--volume "$(abspath $(BUILDDIR)):/srv/build" \
+		--volume "$(abspath $(SRCDIR)):/srv/src" \
+		"$(IMG_LFTP)" \
+			--norc \
+			-c " \
+			set ssl:check-hostname false \
+			&& open \
+				--user $${DEPLOY_WEB_USERNAME} \
+				--password $${DEPLOY_WEB_PASSWORD} \
+				$${DEPLOY_WEB_HOSTNAME} \
+			&& $1 \
+			"
+
+.PHONY: deploy-verify-env
+deploy-verify-env:
+	test ! -z "$${DEPLOY_WEB_HOSTNAME}"
+	test ! -z "$${DEPLOY_WEB_PASSWORD}"
+	test ! -z "$${DEPLOY_WEB_USERNAME}"
+
+.PHONY: deploy-web
+deploy-web: deploy-verify-env
+	$(call \
+		F_DEPLOY_LFTP,\
+		mirror \
+			-epRv \
+			$(foreach I, $(DEPLOY_WEB_PRESERVE), -x $(I)) \
+			--transfer-all \
+			/srv/build/web \
+			/public \
+	)
 
 #
 # Target: web-*
