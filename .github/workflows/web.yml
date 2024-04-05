@@ -42,7 +42,7 @@ jobs:
       if: inputs.deploy == 'yes'
 
       env:
-        DEPLOY_WEB_HOSTNAME: ${{ env.RAE_WEB_HOSTNAME }}
+        DEPLOY_WEB_HOSTNAME: ${{ vars.RAE_WEB_HOSTNAME }}
         DEPLOY_WEB_PASSWORD: ${{ secrets.RAE_WEB_PASSWORD }}
         DEPLOY_WEB_USERNAME: ${{ secrets.RAE_WEB_USERNAME }}
 
