@@ -123,5 +123,6 @@ web-test:
 	test "$$(cat $(BUILDDIR)/web/404.html | file --brief --mime -)" = "text/html; charset=utf-8"
 	test "$$(cat $(BUILDDIR)/web/robots.txt | file --brief --mime -)" = "text/plain; charset=us-ascii"
 	test "$$(cat $(BUILDDIR)/web/sitemap.xml | file --brief --mime -)" = "text/xml; charset=us-ascii"
+	test -d "$(BUILDDIR)/web/s/webfinger"
 	@# Verify reserved redirects do not exist.
 	test ! -e "$(BUILDDIR)/web/p"

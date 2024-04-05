@@ -2,3 +2,7 @@ RewriteEngine On
 
 # Redirect: p/ABC/XYZ -> github.com/readaheadeu/ABC/XYZ
 RewriteRule "^p/(.*)$" "https://github.com/readaheadeu/$1" [L,NE,R]
+
+# Redirect: .well-known/webfinger?resource=ABC/XYZ -> /s/webfinger/ABC/XYZ
+RewriteCond "%{QUERY_STRING}" "(.*(?:^|&))resource=([^&]*)&?(.*)&?$"
+RewriteRule "^.well-known/webfinger$" "/s/webfinger/%2?%1%3" [PT]
